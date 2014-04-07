@@ -16,12 +16,13 @@
                             'default_settings'  => array (
                                    'wrapper'                    => 'div',
                                    'wrapper_class'              => 'alert-box',
-                                   'close_button'               => '<a href="#" class="close">&times;</a>',
+                                   'before_message'             => '<a href="#" class="close">&times;</a>',
                                    'single_message'             => ':message',
-                                   'heading'              => '<strong> :heading </strong>',
+                                   'heading'                    => '<strong> :heading </strong>',
                                    'message_list_wrapper'       => 'ul',
                                    'message_list_wrapper_class' => '',
-                                   'message_list'               => '<li> :message </li>'
+                                   'message_list'               => '<li> :message </li>',
+                                   'after_message'              => ''
                             ),     
                             
                             'success'  => array (

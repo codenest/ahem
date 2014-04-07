@@ -1,18 +1,48 @@
 <?php namespace Codenest\Ahem;
 
 use Illuminate\Session\Store;
+use Illuminate\Support\Contracts\JsonableInterface;
+use Illuminate\Support\Contracts\ArrayableInterface;
 
-class Container 
+class Container implements ArrayableInterface, JsonableInterface
 {
-   
+   /**
+     * Instance of \Illuminate\Session\Store used to store and access notifications in the session.
+     *
+     * @var \Illuminate\Session\Store
+     */
     protected $session;
     
+    /**
+     * Instance of \Codenest\Ahem\Config used to access configurations.
+     *
+     * @var \Codenest\Ahem\Config
+     */
     protected $config;
     
+    /**
+     * All of the created notifications.
+     *
+     * @var array
+     */
     protected $notifications = array();
     
+    /**
+     * All the available notification types.
+     *
+     * @var array
+     */
     protected $types = array();
     
+    /**
+     * Create new instance.
+     *
+     * @param \Illuminate\Session\Store $session
+     * @param \Codenest\Ahem\Config $config
+     * @param array $types
+     *
+     * @return void
+     */
     public function __construct( Store $session, Config $config, array $types = array() )
     {
         $this->session = $session;
@@ -21,11 +51,21 @@ class Container
         
     }
     
+    /**
+     * Boot the container.
+     *
+     * @return void
+     */
     public function boot()
     {
         $this->syncStored();
     }
     
+    /**
+     * Get all stored notifications and sync them with the current ones.
+     *
+     * @return void
+     */
     protected function syncStored()
     {
         $stored = $this->getAllStored();
@@ -48,6 +88,12 @@ class Container
         }
     }
     
+    /**
+     * Get all stored notifications of the given type(s) or all notifications in the session if type is not provided.
+     *
+     * @param array\string\null $types
+     * @return array
+     */
     protected function getAllStored( $types = null )
     {
         $all = $this->session->get($this->config->storeKey(), array());
@@ -67,6 +113,13 @@ class Container
         
     }
     
+    /**
+     * Get all stored notifications of the given type and id(s) or all notifications in the given type if $ids is null.
+     *
+     * @param string $type
+     * @param array\string\null $ids
+     * @return array
+     */
     protected function getStored($type, $ids = null)
     {
         $all = array_pop($this->getAllStored($type));
@@ -92,6 +145,12 @@ class Container
         return $stored; 
     }
     
+    /**
+     * Store the passed notification in the session.
+     *
+     * @param \Codenest\Ahem\Notification $notification
+     * @return void
+     */
     public function store(Notification $notification)
     {
         if($notification ->isFlashable())
@@ -102,6 +161,11 @@ class Container
         }
     }
     
+    /**
+     * Store all the current notifications in the session.
+     *
+     * @return void
+     */
     public function StoreAll()
     {
         foreach($this->notifications as $type => $notifications)
@@ -113,11 +177,24 @@ class Container
         }
     }
     
+    /**
+     * Store the passed $data in the session.
+     *
+     * @param array $data
+     * @return void
+     */
     protected function flash(Array $data = array())
     {
         $this->session->flash($this->config->storeKey(), $data);
     }
     
+    /**
+     * Remove all notifications of the given type(s) if provided or all stored notifications from the session store.
+     *
+     * @param  string|array|null $type
+     *
+     * @return void
+     */
     public function clearStore($types = null)
     {
         if(is_null($types))
@@ -135,6 +212,14 @@ class Container
         
     }
     
+    /**
+     * Remove all notifications of the given type and id(s) (if provided) from the session store.
+     *
+     * @param  string $type
+     * @param  string|array|null $ids
+     *
+     * @return void
+     */
     public function clearFromStore($type, $ids = null)
     {
         $stored = $this->getAllStored();
@@ -158,6 +243,14 @@ class Container
         $this->flash($stored);
     }
     
+    /**
+     * Remove all notifications of the given type(s) (if provided) from the container.
+     *
+     * @param  string|array|null $types
+     * @param  bool $clearStore true to also remove them from the session store.
+     *
+     * @return void
+     */
     public function clearAll($types = null, $clearStore = true)
     {
         if($clearStore)
@@ -179,6 +272,15 @@ class Container
         
     }
     
+    /**
+     * Remove all notifications of the given type and id(s) (if provided) from the container.
+     *
+     * @param  string $type
+     * @param  string|array|null $ids
+     * @param  bool $clearStore true to also remove them from the session store.
+     *
+     * @return void
+     */
     public function clear($type, $ids = null, $clearStore = true)
     {
        if(is_null($ids))
@@ -203,7 +305,13 @@ class Container
         
     }
     
-    
+    /**
+     * Gets all notifications types allowed or all types in the given $types parameter.
+     *
+     * @param string|array|null $types
+     *
+     * @return array
+     */
     public function getTypes($types = null)
     {
         if(is_null($types))
@@ -212,6 +320,13 @@ class Container
         return is_array($types) ? $types : func_get_args();        
     }
     
+    /**
+     * Adds notifications type(s).
+     *
+     * @param string|array $types
+     *
+     * @return void
+     */
     public function addTypes($types)
     {
         $types = is_array($types) ? $types : func_get_args();
@@ -224,9 +339,18 @@ class Container
         }   
     }
     
-    public function add(Notification $notification)
+    /**
+     * Adds the given notification to the notifications array.
+     *
+     * @param \Codenest\Ahem\Notification $notification
+     *
+     * @return \Codenest\Ahem\Notification The saved notification
+     */
+    public function save(Notification $notification)
     {
-        $notification->setId($this->makeNewId($notification->getType(), $notification->getId()));        
+        if($notification->getId() == null)
+            $notification->setId($this->makeNewId($notification->getType(), $notification->getId()));        
+        
         $this->notifications[$notification->getType()][$notification->getId()] = $notification;   
         
         $this->store($notification);
@@ -234,10 +358,19 @@ class Container
         return $notification; 
     }
     
-    public function all($types = null, $collapse = false)
+    /**
+     * Gets all notifications of the given types (if provided) or all notifications in the container.
+     *
+     * @param string|array|null $types String for one type, Array for a number of types and null for all types.
+     * @param bool $collapse Whether to collapse found notifications into a single array.
+     * @param bool $idKeysOnly When collapsing, set true to use the notification ids as keys. false to use "type.id" as the keys.
+     * 
+     * @return array An array of the found notification.
+     */
+    public function all($types = null, $collapse = false, $idKeysOnly = false)
     {
         if(is_null($types))
-            return $collapse ?  $this->collapse($this->notifications) : $this->notifications ;
+            return $collapse ?  $this->collapse($this->notifications, $idKeysOnly) : $this->notifications ;
         
         $types = $this->getTypes($types);
         $notifications = array();
@@ -246,22 +379,47 @@ class Container
             $notifications[$type] = $this->notifications[$type];    
         }
         
-        return $collapse ?  $this->collapse($notifications) : $notifications ;
+        return $collapse ?  $this->collapse($notifications, $idKeysOnly) : $notifications ;
     }
     
-    public function collapse(Array $notifications)
+    /**
+     * Collapse the given notifications into a single array.
+     *
+     * @param array $notifications
+     * @param bool $idKeysOnly true to use the notification ids as keys. false to use "type.id" as the keys.
+     *
+     * @return array
+     */
+    public function collapse(Array $notifications, $idKeysOnly = false)
     {
         $collapsed = array();
         foreach($notifications as $type => $typeNotifications)
         {
-            foreach ($typeNotifications as $id => $notification) 
+            if($idKeysOnly)
             {
-                $collapsed[$type.'.'.$id] = $notification;
+                $collapsed = array_merge($collapsed, $typeNotifications);
             }
+            else
+            {
+               foreach ($typeNotifications as $id => $notification) 
+               {
+                    $collapsed[$type.'.'.$id] = $notification;
+               } 
+            }
+            
+            
         }
         return $collapsed;
     }
     
+    /**
+     * Gets notifications of the given type and id(s) (if provided) or all notifications (of the given type) from the container.
+     *
+     * @param string $type
+     * @param string|int|array|null $ids String or Integer for a specific notification, Array for a number of notifications and null for all notifications.
+     *
+     * @return \Codenest\Ahem\Notification|array
+     */
     public function get($type, $ids = null)
     {
         $all = $this->all($type);
@@ -287,18 +445,31 @@ class Container
         return $notifications;
     }
     
-     
-    public function has($type, $id)
+    /**
+     * Determine if the container has notifications of the given type and id.
+     *
+     * @param string $type
+     * @param string|integer|null $id String or Integer for a specific notification or null for any notification of the given $type.
+     *
+     * @return bool
+     */ 
+    public function has($type, $id = null)
     {
+        if(is_null($id))
+            return $this->countType($type) > 0 ? true  : false;
         return  array_key_exists($id, $this->allIds($type));
     }
     
-    public function count($type = null, $id = null)
+    /**
+     * Get the number of notifications of the given type(s) if provided or all notifications in the container.
+     *
+     * @param string|array|null $types
+     * 
+     * @return int
+     */ 
+    public function count($types = null)
     {
-        if(!is_null($id) && !is_null($type) && !is_array($type))
-            return $this->get($type, $id)->count();    
-        
-        $types = $this->getTypes($type);
+        $types = $this->getTypes($types);
         
         $count = 0;
         foreach($types as $type)
@@ -309,15 +480,31 @@ class Container
         return $count;
     }
     
+    /**
+     * Get the number of notifications of the given type.
+     *
+     * @param string $type
+     * 
+     * @return int
+     */ 
     public function countType($type)
     {
         return count($this->notifications[$type]);
     }
     
+    /**
+     * Get the id of a new notification.
+     *
+     * @param string $type
+     * @param string|int|null $id If string or int, $id is returned irregardless of whether it's unique or not. If null a new unique interger id is generated
+     * 
+     * @return int|string
+     */ 
     public function makeNewId($type, $id = null)
     {
         if(!is_null($id))
             return $id;
+        
         $allIds = $this->allIds($type);
         $maxId = !empty($allIds) ? max($allIds) : null;
         $newId = is_numeric($maxId) ? $maxId + 1: 0;
@@ -330,8 +517,68 @@ class Container
         
     }
     
-    public function allIds($type)
+    /**
+     * Get all the ids of available notifications in the given type.
+     *
+     * @param string $type
+     *
+     * @return array
+     */ 
+    protected function allIds($type)
     {
         return array_keys($this->notifications[$type]);
     }
+    
+    /**
+     * Get notifications as an array.
+     *
+     * @param  array|null  $notifications Pass the notification array to convert or null to convert all notifications in the container.
+     * @return array
+     */
+    public function toArray($notifications = null)
+    {
+        $notifications = $notifications ?: $this->notifications;
+        $array = array();
+        if(!is_array($notifications))
+            return $array;
+        
+        foreach($notifications as $key => $values)
+        {
+            if(is_array($values))
+            {
+                $array[$key] = $this->toArray($values);
+            }
+            elseif(is_object($values))
+            {
+                $array[$key] = $values->toArray();
+            }
+            
+        }
+        return $array;
+        
+    }
+
+    /**
+     * Converts notifications to their JSON representation.
+     *
+     * @param  array|null  $notifications Pass the notification array to convert or null to convert all notifications in the container.
+     * @param  int  $options
+     * 
+     * @return string
+     */
+    public function toJson($notifications = null, $options = 0)
+    {
+        return json_encode($this->toArray($notifications), $options);
+    }
+
+    /**
+     * Convert the notifications to its string representation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->toJson();
+    }
+    
 }
