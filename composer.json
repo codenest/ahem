@@ -1,23 +1,25 @@
 {
     "name": "codenest/ahem",
-    "description": "",
+    "keywords": ["laravel", "notifications", "messages", "flash"],
+    "description": "A simple laravel packege for creating, managing and displaying single and multiple request notification messages.",
+    "homepage": "https://github.com/codenest/ahem",
     "authors": [
         {
             "name": "David Kyalo",
             "email": "davidmkyalo@gmail.com"
         }
     ],
+    "license": "MIT",
     "require": {
         "php": ">=5.3.0",
-        "illuminate/support": "4.1.*"
+        "illuminate/support": "4.*",
+        "illuminate/session": "4.*",
+        "illuminate/config": "4.*",
     },
     "autoload": {
-        "classmap": [
-            "src/migrations"
-        ],
         "psr-0": {
             "Codenest\\Ahem\\": "src/"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev"
 }

@@ -453,11 +453,19 @@ class Container implements ArrayableInterface, JsonableInterface
      *
      * @return bool
      */ 
-    public function has($type, $id = null)
+    public function has($type, $id = null, $messageKey = null) 
     {
         if(is_null($id))
             return $this->countType($type) > 0 ? true  : false;
-        return  array_key_exists($id, $this->allIds($type));
+        
+        
+        $notificationExists = array_key_exists($id, $this->allIds($type));
+        if(is_null($messageKey))
+           return  $notificationExists;
+        
+        
+        return isset($this->notifications[$type][$id]) ? $this->notifications[$type][$id]->has($messageKey) : false;
+        
     }
     
     /**

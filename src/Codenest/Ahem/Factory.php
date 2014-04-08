@@ -239,9 +239,9 @@ class Factory {
      *
      * @return bool
      */    
-    public function has($type, $id = null) 
+    public function has($type, $id = null, $messageKey = null) 
     {
-        return $this->container->has($type, $id);
+        return $this->container->has($type, $id, $messageKey);
     }
     
     /**
@@ -706,7 +706,8 @@ class Factory {
     protected function dynamicHas($type, $parameters)
     {
         $id = isset($parameters[0]) ? $parameters[0] : null;
-        return $this->has($type, $id);
+        $messageKey = isset($parameters[1]) ? $parameters[1] : null;
+        return $this->has($type, $id, $messageKey);
     }
     
     /**
@@ -786,7 +787,9 @@ class Factory {
          $clearStore = isset($parameters[1]) ? $parameters[1] : true;
          return $this->clear($type, $id, $clearStore);
     }
-    /**
+    
+     
+     /**
      * Dynamically handle calls to this class.
      *
      * @param  string  $method

@@ -179,19 +179,9 @@ class Notification implements ArrayableInterface, JsonableInterface {
      */
     public function addMessages($messages = array())
     {
-        if($messages instanceof MessageBag)
+        if(is_object($messages))
         {
-            
-            $messagesArray = $messages->getMessages();
-            $this->messages->merge($messagesArray);
-            
-            if($messages->hasHeading())
-                $this->setHeading($messages->getHeading());
-            
-        }
-        elseif($messages instanceof Illuminate\Support\MessageBag)
-        {
-            $this->messages->merge($messages->getMessages());
+             $this->messages->merge($messages->getMessages());
         }
         elseif(is_array($messages))
         {
@@ -579,5 +569,18 @@ class Notification implements ArrayableInterface, JsonableInterface {
     public function __toString()
     {
         return $this->toJson();
+    }
+    
+    /**
+     * Dynamically calls the current MessageBag's class methods.
+     *
+     * @param  string  $method
+     * @param  array   $parameters
+     * 
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        return call_user_func_array(array($this->messages, $method), $parameters);
     }
 }
