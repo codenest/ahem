@@ -11,8 +11,20 @@ Ahem is a simplly enables you to :-
 
 ## Installation
 
-Add the following to your `composer.json` :
+Add the following to your `composer.json`
 
-    "codenest/ahem": "1.*"
+    "codenest/ahem": "dev-master"
 
-Then ```composer update``` in your terminal and you have it.
+Then run ```composer update``` in your terminal and there you have it.
+
+In order to start using Ahem, you need to add it's service provider and facade in your application. To do this open `app/config/app.php`. 
+
+In your `providers` array add
+
+    'Codenest\Ahem\AhemServiceProvider',
+
+And in your `aliases` array add
+
+    'Ahem'  =>  'Codenest\Ahem\Facades\Ahem',
+
+You are now ready to go!!!
