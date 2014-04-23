@@ -444,30 +444,57 @@ class Container implements ArrayableInterface, JsonableInterface
         
         return $notifications;
     }
+
+    /**
+     * Gets the first notification of the given type.
+     *
+     * @param string $type
+     *
+     * @return \Codenest\Ahem\Notification|null
+     */
+    public function first($type)
+    {
+        $all = $this->get($type);
+        return is_array($all) ? array_shift($all) : null;
+    }
     
     /**
      * Determine if the container has notifications of the given type and id.
      *
      * @param string $type
      * @param string|integer|null $id String or Integer for a specific notification or null for any notification of the given $type.
+     * @param string|integer|null $messageKey String or Integer for a specific message or null for any message of the given $type/$id.
      *
      * @return bool
      */ 
     public function has($type, $id = null, $messageKey = null) 
     {
-        if(is_null($id))
+        if(is_null($id) && is_null($messageKey))
+        {
             return $this->countType($type) > 0 ? true  : false;
-        
-        
-        $notificationExists = array_key_exists($id, $this->allIds($type));
-        if(is_null($messageKey))
-           return  $notificationExists;
-        
-        
-        return isset($this->notifications[$type][$id]) ? $this->notifications[$type][$id]->has($messageKey) : false;
-        
+        }
+        elseif(!is_null($id) && is_null($messageKey)) 
+        {
+            return  array_key_exists($id, $this->allIds($type));
+        }
+        elseif( !is_null($id) && !is_null($messageKey))
+        {
+            return isset($this->notifications[$type][$id]) ? $this->notifications[$type][$id]->has($messageKey) : false;
+        }
+        elseif( is_null($id) && !is_null($messageKey))
+        {
+            $allNotifications = $this->get($type);
+            foreach ($allNotifications as $id => $notification)
+            {
+                if( $notification->has($messageKey) )
+                    return true;
+            }
+        }
+
+        return false;
     }
     
+
     /**
      * Get the number of notifications of the given type(s) if provided or all notifications in the container.
      *

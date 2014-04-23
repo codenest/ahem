@@ -60,19 +60,18 @@ class Factory {
      *
      * @return \Codenest\Ahem\Notification
      */
-    public function make($type, $id = null, $messages = array(), $flashable = true)
+    public function make($type, $id = null)
     {
         if(!$this->isAllowed($type, false))
             return $this->invalidTypeException($type, 'make'); 
              
         
         $id = $this->container->makeNewId($type, $id);
-        $notification = new Notification($type, $id, $flashable);
+        $notification = new Notification($type, $id);
         $notification = $this->extended($type) 
                             ? $this->configureExtended($notification) 
                             : $this->configureDefault($notification);
      
-        $notification->addMessages($messages);
         $this->container->save($notification);
         
         return $notification;
@@ -91,9 +90,8 @@ class Factory {
             return $this->invalidTypeException($notification->getType(), 'config Extended'); 
         
         $settings = $this->extensions[$notification->getType()]->getSettings();
-        $headingKey = $this->extensions[$notification->getType()]->getHeadingKey();
         
-        return  $notification->configure($settings, $headingKey);
+        return  $notification->configure($settings);
     }
     
     /**
@@ -106,9 +104,8 @@ class Factory {
     protected function configureDefault(Notification $notification)
     {
         $settings = $this->config->getSettings($notification->getType());
-        $headingKey = $this->config->getHeadingKey($notification->getType());
         
-        return  $notification->configure($settings, $headingKey);
+        return  $notification->configure($settings);
     }
     
     
@@ -231,11 +228,25 @@ class Factory {
         }
     }
     
+
+     /**
+     * Gets the first notification of the given type.
+     *
+     * @param string $type
+     *
+     * @return \Codenest\Ahem\Notification|null
+     */
+    public function first($type)
+    {
+        return $this->container->first($type);
+    }
+
     /**
      * Determine if the container has notifications of the given type and id.
      *
      * @param string $type
      * @param string|integer|null $id String or Integer for a specific notification or null for any notification of the given $type.
+     * @param string|integer|null $messageKey String or Integer for a specific message or null for any message of the given $type/$id.
      *
      * @return bool
      */    
@@ -244,6 +255,22 @@ class Factory {
         return $this->container->has($type, $id, $messageKey);
     }
     
+
+
+     /**
+     * Determine if the container has notifications containing the given message key.
+     *
+     * @param string $type
+     * @param string $messageKey
+     * @param string|integer|null $id String or Integer for a specific notification or null for any notification of the given $type.
+     *
+     * @return bool
+     */ 
+     public function hasMessage($type, $messageKey, $id = null)
+     {
+        return $this->has($type, $id, $messageKey);
+     }
+
     /**
      * Get the number of notifications of the given type(s) if provided or all notifications in the container.
      *
@@ -355,7 +382,7 @@ class Factory {
      * 
      * @return string
      */
-    public function renderAll($types = null, $options = array(), $clear = true)
+    public function renderAll($types = null, $options = array(), $headingsOnly = false, $clear = true)
     {
         $notifications = $this->all($types, true);
         $html = '';
@@ -365,7 +392,7 @@ class Factory {
             $option =  is_string($types) 
                         ? $this->getHtmlOptions( $notification->getId(), $options )
                         : $this->getHtmlOptions( $notification->getType(), $options );          
-            $html .= $notification->render($option);
+            $html .= $headingsOnly ? $notification->renderHeading($options) : $notification->render($option);
         }
         
         if($clear)
@@ -383,9 +410,9 @@ class Factory {
      *
      * @return string
      */
-    public function renderAllButKeep($types = null, $options = array())
+    public function renderAllButKeep($types = null, $options = array(), $headingsOnly = false)
     {
-        return $this->renderAll($types,$options, false);
+        return $this->renderAll($types, $options, $headingsOnly, false);
     }
     
     /**
@@ -398,12 +425,12 @@ class Factory {
      * 
      * @return string
      */
-    public function render($type, $ids = null, $options = array(), $clear = true)
+    public function render($type, $ids = null, $options = array(), $headingOnly = false, $clear = true)
     {
         $html = '';
         if(is_null($ids))
         {
-            $html .=  $this->renderAll($type, $options, $clear);
+            $html .=  $this->renderAll($type, $options, $headingOnly, $clear);
             return $html; 
         }
         
@@ -413,14 +440,14 @@ class Factory {
             foreach($notifications as $notification)
             {
                  $option = $this->getHtmlOptions( $notification->getId(), $options );          
-                 $html .= $notification->render($option);
+                 $html .= $headingOnly ? $notification->renderHeading($options) : $notification->render($option);
             }
             
         }
         else
         {
             $notification = $this->get($type, $ids);
-            $html .= $notification->render($options);
+            $html .= $headingOnly ? $notification->renderHeading($options) : $notification->render($option);
         }
         
         if($clear)
@@ -440,9 +467,9 @@ class Factory {
      * 
      * @return string
      */
-    public function renderButKeep($type, $ids = null, $options = array())
+    public function renderButKeep($type, $ids = null, $options = array(), $headingOnly = false)
     {
-        return $this->render($type, $ids, $options, false);
+        return $this->render($type, $ids, $options, $headingOnly, false);
     }
     
     /**
@@ -640,6 +667,7 @@ class Factory {
     {
         return array (
                     array( 'search' => 'get', 'method' => 'dynamicGet'),
+                    array( 'search' => 'first', 'method' => 'dynamicFirst'),
                     array( 'search' => 'count', 'method' => 'dynamicCount'),
                     array( 'search' => 'has', 'method' => 'dynamicHas'),
                     array( 'search' => 'addTo', 'method' => 'dynamicAddTo'),
@@ -661,10 +689,8 @@ class Factory {
      */
     protected function dynamicMake($type, $parameters)
     {
-        $messages = isset($parameters[0]) ? $parameters[0] : array();
-        $id = isset($parameters[1]) ? $parameters[1] : null;
-        $flashable = isset($parameters[2]) ? $parameters[2] : true;
-        return $this->make( $type, $id, $messages, $flashable);
+        $id = isset($parameters[0]) ? $parameters[0] : null;
+        return $this->make( $type, $id );
     }
     
     /**
@@ -681,6 +707,19 @@ class Factory {
         return $this->get($type, $id);
     }
     
+    /**
+     * Dynamically calls the 'first' method.
+     *
+     * @param  string  $type
+     * @param  array   $parameters
+     * 
+     * @return mixed
+     */
+    protected function dynamicFirst($type, $parameters)
+    {
+        return $this->first($type);
+    }
+
     /**
      * Dynamically calls the 'count' method.
      *
@@ -705,9 +744,14 @@ class Factory {
      */
     protected function dynamicHas($type, $parameters)
     {
-        $id = isset($parameters[0]) ? $parameters[0] : null;
-        $messageKey = isset($parameters[1]) ? $parameters[1] : null;
-        return $this->has($type, $id, $messageKey);
+        $message = $this->typeFromMethod($type, 'Message', strlen($type) - strlen('Message') );
+
+        $var1 = isset($parameters[0]) ? $parameters[0] : null;
+        $var2 = isset($parameters[1]) ? $parameters[1] : null;
+        if($message)
+           return $this->hasMessage($message, $var1, $var2);
+        
+        return $this->has($type, $var1, $var2);
     }
     
     /**
@@ -742,21 +786,22 @@ class Factory {
          $clear = $keepType ? false : true;
          $type = $keepType  ?: $type;
          
+        $renderHeading = $this->typeFromMethod($type, 'heading');
+        $headingOnly = $renderHeading ? true : false;
+        $type = $renderHeading ?: $type;
+
          $id = isset($parameters[0]) && !is_array($parameters[0]) ? $parameters[0] : null;
          $options = array();
-         $close = true;
          if(isset($parameters[0]) && is_array($parameters[0]))
          {
              $options = $parameters[0];
-             $close = isset($parameters[1]) ? $parameters[1] : $close;
          }
          elseif(isset($parameters[0]) && !is_array($parameters[0]))
          {
              $options = isset($parameters[1]) ? $parameters[1] : $options;
-             $close = isset($parameters[2]) ? $parameters[2] : $close;
          }
          
-         return $this->render($type, $id, $options, $clear, $close);
+         return $this->render($type, $id, $options, $headingOnly, $clear);
     }
     
     /**

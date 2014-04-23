@@ -18,19 +18,6 @@ class Config
      */
     protected $sessionKey = 'session_key';
         
-    /**
-     * Config key for the message headings settings.
-     *
-     * @var string
-     */
-    protected $headingsKey = 'headings';
-    
-    /**
-     * Config key for the default message heading key value.
-     *
-     * @var string
-     */
-    protected $defaultHeadingKey = 'default_key';
     
     /**
      * Config key for the notification settings.
@@ -154,29 +141,5 @@ class Config
         }
         return $settings;
     }
-    
-    /**
-     * Retrieves the default notification heading key.
-     *
-     * @return string
-     */
-    public function defaultHeadingKey()
-    {
-        return $this->repository->get( $this->repoOptionString($this->headingsKey, $this->defaultHeadingKey ) );
-    }
-    
-    /**
-     * Retrieves the heading key of a notification type.
-     *
-     * @param  string $type The type name or null to get all heading keys
-     * @return array
-     */
-    public function getHeadingKey($type = null)
-    {
-         if(is_null($type))
-            return $this->repository->get( $this->repoOptionString($this->headingsKey), array());
-        
-        return $this->repository->get( $this->repoOptionString($this->headingsKey, $type), $this->defaultHeadingKey());
-    }
-        
+            
 }

@@ -1,5 +1,6 @@
 <?php namespace Codenest\Ahem;
 
+use Illuminate\Support\MessageBag;
 use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
 
@@ -34,9 +35,16 @@ class Notification implements ArrayableInterface, JsonableInterface {
     protected $flashable = true;
     
     /** 
+     * The notification heading.
+     * 
+     * @var string
+     */
+    protected $heading = '';
+    
+    /** 
      * MessageBag Instance.
      * 
-     * @var \Codenest\Ahem\MessageBag
+     * @var Illuminate\Support\MessageBag
      */
     protected $messages;
    
@@ -45,26 +53,35 @@ class Notification implements ArrayableInterface, JsonableInterface {
      *
      * @param string $type
      * @param array $id
-     * @param bool $flashable
+     *
      * @return void
      */
-    public function __construct( $type, $id = null, $flashable = true )
+    public function __construct( $type, $id = null )
     {
         $this->type = $type;
         $this->id = $id;
-        $this->flashable = $flashable;
         $this->messages = new MessageBag();               
     }
     
     /**
-     * Set and/or get the flashable status.
+     * Set the flashable status.
      *
      * @param bool $flashable
+     * @return \Codenest\Ahem\Notification
+     */
+    public function flashable($flashable)
+    {
+        $this->flashable = $flashable;
+        return $this;
+    }
+
+    /**
+     * Determine if this notification is flashable.
+     *
      * @return bool
      */
-    public function isFlashable($flashable = null)
+    public function isFlashable()
     {
-        $this->flashable = is_null($flashable) ? $this->flashable : $flashable;
         return $this->flashable;
     }
     
@@ -72,11 +89,12 @@ class Notification implements ArrayableInterface, JsonableInterface {
      * Set the Id.
      *
      * @param string|integer $id
-     * @return void
+     * @return \Codenest\Ahem\Notification
      */
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
     }
     
     /**
@@ -93,11 +111,12 @@ class Notification implements ArrayableInterface, JsonableInterface {
      * Set the notification type.
      *
      * @param string $type
-     * @return void
+     * @return \Codenest\Ahem\Notification
      */
     public function setType($type)
     {
         $this->type = $type;
+        return $this;
     }
     
     /**
@@ -111,24 +130,25 @@ class Notification implements ArrayableInterface, JsonableInterface {
     }
     
     /**
-     * Set the message bag heading.
+     * Set the notification heading.
      *
      * @param string $heading
-     * @return void
+     * @return \Codenest\Ahem\Notification
      */
-    public function setHeading($heading)
+    public function heading($heading)
     {
-        $this->messages->setHeading($heading);
+        $this->heading = $heading;
+        return $this;
     }
     
     /**
-     * Get the message bag heading.
+     * Get the notification heading.
      *
      * @return string
      */
     public function getHeading()
     {
-        $this->messages->getHeading();
+        $this->heading;
     }
     
     /**
@@ -154,30 +174,20 @@ class Notification implements ArrayableInterface, JsonableInterface {
     /**
      * Get the MessageBag instance.
      *
-     * @return \Codenest\Ahem\MessageBag
+     * @return \Illuminate\Support\MessageBag
      */
     public function getMessageBag()
     {
         return $this->messages;
     }
-    
-     /**
-     * Get the MessageBag heading key.
-     *
-     * @return string
-     */
-    public function getHeadingKey()
-    {
-        return $this->messages->getHeadingKey();
-    }
-    
+        
     /**
      * Add new messages into the bag.
      *
      * @param  mixed $messages array, string, \Codenest\Ahem\MessageBag or \Illuminate\Support\MessageBag Instances.
-     * @return void
+     * @return \Codenest\Ahem\Notification
      */
-    public function addMessages($messages = array())
+    public function messages($messages = array())
     {
         if(is_object($messages))
         {
@@ -191,6 +201,8 @@ class Notification implements ArrayableInterface, JsonableInterface {
         {
             $this->messages->merge(array($messages));
         }
+
+        return $this;
                 
     }
     
@@ -199,7 +211,7 @@ class Notification implements ArrayableInterface, JsonableInterface {
      *
      * @param  string $message
      * @param  string $key
-     * @return void
+     * @return \Codenest\Ahem\Notification
      */
     public function addMessage($message, $key = null)
     {
@@ -207,7 +219,7 @@ class Notification implements ArrayableInterface, JsonableInterface {
            return  $this->addMessages(array($message));   
         
         $this->messages->add($key, $message);
-             
+        return $this;
     }
     
     /**
@@ -221,36 +233,22 @@ class Notification implements ArrayableInterface, JsonableInterface {
     }
     
     /**
-     * Set the notification settings and/or bag's heading key.
+     * Set the notification settings.
      *
      * @param  array $settings
-     * @param  string $headingKey
+     *
      * @return \Codenest\Ahem\Notification
      */
-    public function configure(array $settings = array(), $headingKey = null)
+    public function configure(array $settings = array())
     {
         foreach ($settings as $key => $value) 
         {
             $this->settings[$key] = $value;
         }
-        
-        if(!is_null($headingKey))
-            return $this->headingKey($headingKey);
-        
+
         return $this;
     }
    
-    /**
-     * Set the bag's heading key.
-     *
-     * @param  string $key
-     * @return \Codenest\Ahem\Notification
-     */
-    public function headingKey($key)
-    {
-        $this->messages->setHeadingKey($key);
-        return $this;
-    }
     
     /**
      * Set the notification's HTML wrapper element and its css class value.
@@ -310,7 +308,7 @@ class Notification implements ArrayableInterface, JsonableInterface {
      * @param  string $format
      * @return \Codenest\Ahem\Notification
      */
-    public function heading($format)
+    public function headingFormat($format)
     {
         $this->settings['heading'] = $format;
         return $this;
@@ -385,6 +383,23 @@ class Notification implements ArrayableInterface, JsonableInterface {
         return $html;
     }
     
+
+    /**
+     * Render the notification's heading.
+     *
+     * @param  array $options
+     * @return string
+     */
+    public function renderHeading($options = array())
+    {
+        $html  = $this->openHtml($options);
+        $html .= $this->beforeMessageHtml();
+        $html .= $this->headingHtml();
+        $html .= $this->afterMessageHtml();
+        $html .= $this->closeHtml();
+        return $html;
+    }
+
     /**
      * Open a new html notification.
      *
@@ -444,7 +459,7 @@ class Notification implements ArrayableInterface, JsonableInterface {
         }
         else
         {
-            $html .= $this->headingHtml($messages);
+            $html .= $this->headingHtml();
             $html .= $this->messageListHtml($messages);
         }
         return $html;
@@ -468,10 +483,9 @@ class Notification implements ArrayableInterface, JsonableInterface {
      * @param Codenest\Ahem\MessageBag|null $messages
      * @return string
      */
-    public function headingHtml($messages = null)
+    public function headingHtml()
     {
-        $messages = $messages ?: $this->messages;
-        return $this->messages->getHeading($this->settings['heading']);
+        return !empty($this->heading) ? str_replace(':heading', $this->heading, $this->settings['heading']) : '';
     }
     
     /**
@@ -546,6 +560,7 @@ class Notification implements ArrayableInterface, JsonableInterface {
                 'id'        => $this->id,
                 'type'      => $this->type,
                 'settings'  => $this->settings,
+                'heading'   => $this->heading,
                 'messages'  => $this->messages->toArray() 
                 );
     }
