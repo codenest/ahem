@@ -29,10 +29,10 @@
                                    'wrapper'                    => 'div',
                                    
                                    // The CSS class value of the wrapper.
-                                   'wrapper_class'              => 'alert-box',
+                                   'wrapper_class'              => 'alert',
                                    
                                    // Any HTML that need to be appended to the notification after the wrapper element is opened but before the messages are rendered.
-                                   'before_message'             => '<a href="#" class="close">&times;</a>',
+                                   'before_message'             => '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>',
                                    
                                    // The format in which to display single messages eg. <p> :message </p>.
                                    'single_message'             => ':message',
@@ -62,28 +62,28 @@
                             */
                             'success'  => array (
                                     
-                                    'wrapper_class'     => 'alert-box success',
+                                    'wrapper_class'     => 'alert alert-success alert-dismissable',
                                                     
                             ),
 
                              // Info notification settings.
                             'info'  => array (
                                     
-                                    'wrapper_class'     => 'alert-box info',
+                                    'wrapper_class'     => 'alert alert-info alert-dismissable',
                                                     
                             ),
 
                              // Warning notification settings.
                             'warning'  => array (
                                     
-                                    'wrapper_class'     => 'alert-box warning',
+                                    'wrapper_class'     => 'alert alert-warning alert-dismissable',
                                                     
                             ),
 
                              // Error notification settings.
                             'error'  => array (
                                     
-                                    'wrapper_class'     => 'alert-box error',
+                                    'wrapper_class'     => 'alert alert-danger alert-dismissable',
                                                     
                             ),    
                              
