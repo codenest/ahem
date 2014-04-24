@@ -90,7 +90,7 @@ public function postLogin()
    }
    else 
    {
-      Ahem::error('login_success')->messages($validator->messages())->heading('Something went wrong.');
+      Ahem::error('login_error')->messages($validator->messages())->heading('Something went wrong.');
 	  return Redirect::back()->withInput();
    }       
 }
