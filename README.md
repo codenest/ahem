@@ -39,12 +39,12 @@ By default, Ahem has  ``success``, ``error``, ``warning`` and ``info`` notificat
 ```
 php artisan config:publish codenest/ahem
 ```
+========================
 
 ## Basic Usage.
 Before getting into details, lets have a look at how we can use Ahem's default notification types. 
 
 ### Adding Notifications
-========================
 
 #### Adding single message notifications.
 
@@ -102,31 +102,65 @@ As we are going to see later, notifications are automatically flashed into the s
 ```php
 Ahem::error('login_error')->message('Login error. Try again.')->flashable(false);
 ```
-	
-### Displaying Notifications.
 =======================
 
-Rendering all avaliable notifictions.
+### Rendering Notifications.
+
+
+#### Rendering all avaliable notifictions.
 
 ```php
 {{ Ahem::renderAll() }}
 ```
 
-Rendering all available notifications for specific types.
+#### Rendering all available notifications for specific types.
 
 ```php
 {{ Ahem::renderAll(array('error', 'warning')) }}
 ```
 
-Rendering all notifications for a given type.
+#### Rendering all notifications for a given type.
 
 ```php
 {{ Ahem::renderError() }}
+{{ Ahem::renderSuccess() }}
 ```
-Rendering a specific notification.
+
+#### Rendering a specific notification.
 
 ```php
 {{ Ahem::renderError('login_error') }}
+{{ Ahem::renderSuccess('login_success') }}
+```
+
+### Rendering notifications without clearing them from the session.
+
+I had mentioned before that after you render a flashed notification, It  automatically be cleared from the session. In some cases, we might need to keep some notifications in the session even after they are rendered. 
+
+#### Render but keep all avaliable notifictions.
+
+```php
+{{ Ahem::renderAllButKeep() }}
+```
+
+#### Rendering but keep all available notifications for specific types.
+
+```php
+{{ Ahem::renderAllButKeep(array('error', 'warning')) }}
+```
+
+#### Rendering but keep all notifications for a given type.
+
+```php
+{{ Ahem::renderButKeepError() }}
+{{ Ahem::renderButKeepSuccess() }}
+```
+
+#### Rendering but keep a specific notification.
+
+```php
+{{ Ahem::renderButKeepError('login_error') }}
+{{ Ahem::renderButKeepError('login_success') }}
 ```
 
 ## Extending
