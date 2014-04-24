@@ -206,6 +206,17 @@ class Notification implements ArrayableInterface, JsonableInterface {
                 
     }
     
+
+    /**
+     * Add new a message into the bag.
+     *
+     * @param  mixed $messages array, string, \Codenest\Ahem\MessageBag or \Illuminate\Support\MessageBag Instances.
+     * @return \Codenest\Ahem\Notification
+     */
+    public function message($message)
+    {
+        return $this->messages($message);
+    }
     /**
      * Add a new message into the bag.
      *
