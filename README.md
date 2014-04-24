@@ -48,27 +48,34 @@ Before getting into details, lets have a look at how we can use Ahem's default n
 
 #### Adding single message notifications.
 
-	Ahem::success()->message('Login was successfully. Welcome.');
-	Ahem::error()->message('Wrong email or password.');
-	Ahem::info()->message('Somebody send you a message');
-	Ahem::warning()->message('Your account subscription will expire in 3 days. Please renew.');
+```php
+Ahem::success()->message('Login was successfully. Welcome.');
+Ahem::error()->message('Wrong email or password.');
+Ahem::info()->message('Somebody send you a message');
+Ahem::warning()->message('Your account subscription will expire in 3 days. Please renew.');
+```
 
 #### Giving notifications their unique ``id`` 
 
-	Ahem::success('login_success')->message('Login was successfully. Welcome.');
-	Ahem::error('login_error')->message('Wrong email or password.');
+```php
+Ahem::success('login_success')->message('Login was successfully. Welcome.');
+Ahem::error('login_error')->message('Wrong email or password.');
+```
 
 In the above case, I have used ``login_success`` and ``login_error`` as the ids. This id uniquely identified the notification and I recommend it if you have multiple notifications on one request and you would like to reference some of them at a later stage. As you saw in our first example, the ``id`` is not necessary. Your can leave it blank and the notification will be assigned a unique integer ``id``.
 
 #### Multiple messages and notifications headings.
 Adding an array of messages with an heading.
-	
-	Ahem::error('login_error')
-					->messages(array('email' => 'Enter a valid email address', 'password' => 'The password field is required'))
-					->heading('Something went wrong');
+
+```php	
+Ahem::error('login_error')
+		->messages(array('email' => 'Enter a valid email address', 'password' => 'The password field is required'))
+		->heading('Something went wrong');
+```
 					
 Adding validation error messages.
 
+```php
 	public function postLogin()
     {
         $rules = array (
@@ -87,12 +94,14 @@ Adding validation error messages.
 		  return Redirect::back()->withInput();
        }       
     }
+```
 	
 #### Add notifications for the same requests.
 As we are going to see later, notifications are automatically flashed into the session on creation and cleared once they are rendered, you might want to add notifications for a single requests that don't need to be flashed. We do this by simply setting ``flashable`` to ``false``
 	
-	Ahem::error('login_error')->message('Login error. Try again.')->flashable(false);
-	
+```php
+Ahem::error('login_error')->message('Login error. Try again.')->flashable(false);
+```
 	
 ### Displaying Message.
 =======================
