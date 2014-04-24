@@ -13,7 +13,9 @@ Ahem is a simplly enables you to :-
 
 Add the following to your `composer.json`
 
-	"codenest/ahem": "dev-master"
+```
+"codenest/ahem": "dev-master"
+```
 
 Then run ```composer update``` in your terminal.
 
@@ -21,16 +23,22 @@ In order to start using Ahem, you need to add it's service provider and facade i
 
 In your `providers` array add
 
-	'Codenest\Ahem\AhemServiceProvider',
+```php
+'Codenest\Ahem\AhemServiceProvider',
+```
 
 And in your `aliases` array add
 
-	'Ahem'  =>  'Codenest\Ahem\Facades\Ahem',
+```php
+'Ahem'  =>  'Codenest\Ahem\Facades\Ahem',
+```
 
 ## Configuration.
 By default, Ahem has  ``success``, ``error``, ``warning`` and ``info`` notification types defined in its configuration file and you may wish to add your own, edit or remove some of these notification types.  To do this, you need to publish the config file to your app by running the command below.
 
-	php artisan config:publish codenest/ahem
+```
+php artisan config:publish codenest/ahem
+```
 
 ## Basic Usage.
 Before getting into details, lets have a look at how we can use Ahem's default notification types. 
