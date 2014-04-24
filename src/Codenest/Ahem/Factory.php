@@ -447,7 +447,11 @@ class Factory {
         else
         {
             $notification = $this->get($type, $ids);
-            $html .= $headingOnly ? $notification->renderHeading($options) : $notification->render($option);
+           
+             if(!is_object($notification))
+                return '';
+
+            $html .= $headingOnly ? $notification->renderHeading($options) : $notification->render($options);
         }
         
         if($clear)

@@ -76,37 +76,58 @@ Ahem::error('login_error')
 Adding validation error messages.
 
 ```php
-	public function postLogin()
-    {
-        $rules = array (
-                    'email' => 'email|required',
-                    'password'   => 'required'
-            );
-       $validator = Validator::make( Input::all(), $rules);
-       if($validator->passes())
-       {
-           Ahem::success('login_success')->message('Login was successfully. Welcome!!');
-		   return Redirect::to('/');
-       }
-       else 
-       {
-          Ahem::error('login_success')->messages($validator->messages())->heading('Something went wrong.');
-		  return Redirect::back()->withInput();
-       }       
-    }
+public function postLogin()
+{
+    $rules = array (
+                'email' => 'email|required',
+                'password'   => 'required'
+        );
+   $validator = Validator::make( Input::all(), $rules);
+   if($validator->passes())
+   {
+       Ahem::success('login_success')->message('Login was successfully. Welcome!!');
+	   return Redirect::to('/');
+   }
+   else 
+   {
+      Ahem::error('login_success')->messages($validator->messages())->heading('Something went wrong.');
+	  return Redirect::back()->withInput();
+   }       
+}
 ```
 	
-#### Add notifications for the same requests.
+#### Notifications for the same requests.
 As we are going to see later, notifications are automatically flashed into the session on creation and cleared once they are rendered, you might want to add notifications for a single requests that don't need to be flashed. We do this by simply setting ``flashable`` to ``false``
 	
 ```php
 Ahem::error('login_error')->message('Login error. Try again.')->flashable(false);
 ```
 	
-### Displaying Message.
+### Displaying Notifications.
 =======================
-There are various way to display notifications as we are going to see below.
 
+Rendering all avaliable notifictions.
+
+```php
+{{ Ahem::renderAll() }}
+```
+
+Rendering all available notifications for specific types.
+
+```php
+{{ Ahem::renderAll(array('error', 'warning')) }}
+```
+
+Rendering all notifications for a given type.
+
+```php
+{{ Ahem::renderError() }}
+```
+Rendering a specific notification.
+
+```php
+{{ Ahem::renderError('login_error') }}
+```
 
 ## Extending
 
