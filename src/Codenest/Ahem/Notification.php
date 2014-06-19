@@ -464,7 +464,7 @@ class Notification implements ArrayableInterface, JsonableInterface {
     {
         $messages = is_null($messages) ? $this->messages : $messages;
         $html = '';
-        if($messages->count() < 2 && $messages->any() && !$messages->hasHeading())
+        if($messages->count() < 2 && $messages->any() && empty($this->heading))
         {
             $html .= $this->singleMessageHtml($messages);
         }
